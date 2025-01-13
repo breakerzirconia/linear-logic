@@ -1,0 +1,4 @@
+name: linear-logic
+depend: cubical standard-library
+include: src
+flags: --cubical
