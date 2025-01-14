@@ -34,6 +34,11 @@ data ILL : Type where
 
   !_ : ILL → ILL
 
+infixr 7 _⇒_
+
+_⇒_ : ILL → ILL → ILL
+A ⇒ B = ! A ⊸ B
+
 ---------------------------
 -- Multiset of resources --
 ---------------------------
@@ -88,9 +93,9 @@ within r swap i and j = let x = within r at i
 -- Persistent context --
 ------------------------
 
-data Per : Resources → Type where
-  Per1 : {A : ILL} → Per ([ ! A ])
-  PerS : {Δ : Resources} {A : ILL} → Per Δ → Per (Δ ⟪ ! A)
+data Persistent : Resources → Type where
+  Per1 : {A : ILL} → Persistent ([ ! A ])
+  PerS : {Δ : Resources} {A : ILL} → Persistent Δ → Persistent (Δ ⟪ ! A)
 
 -------------
 -- Sequent --
@@ -108,13 +113,13 @@ data _⊢_ : Resources → ILL → Type where
         -----------------
         [ var n ] ⊢ var n
 
-  Cut : ∀ (Δ₁ Δ₂ : Resources) {B : ILL} (A : ILL) →
+  Cut : ∀ (A : ILL) (Δ₁ Δ₂ : Resources) {B : ILL} →
         Δ₁ ⊢ A →
         Δ₂ ⟪ A ⊢ B →
         ------------
         Δ₁ ++ Δ₂ ⊢ B
 
-  ⊸L : (Δ₁ Δ₂ : Resources) {A B C : ILL} →
+  ⊸L : ∀ (Δ₁ Δ₂ : Resources) {A B C : ILL} →
        Δ₁ ⊢ A →
        Δ₂ ⟪ B ⊢ C →
        --------------------
@@ -200,8 +205,8 @@ data _⊢_ : Resources → ILL → Type where
        Δ ⟪ ! A ⊢ B
 
   !R : ∀ {Δ : Resources} {A : ILL} →
+       Persistent Δ →
        Δ ⊢ A →
-       Per Δ →
        -------
        Δ ⊢ ! A
 
@@ -216,6 +221,12 @@ Exchange12 : ∀ {Δ : Resources} {A B C D : ILL} →
              -------------
              Δ ⟪ B ⟪ A ⟪ C ⊢ D
 Exchange12 = Exchange 1 2
+
+Exchange02 : ∀ {Δ : Resources} {A B C D : ILL} →
+             Δ ⟪ A ⟪ B ⟪ C ⊢ D →
+             -------------
+             Δ ⟪ C ⟪ B ⟪ A ⊢ D
+Exchange02 = Exchange 0 2
 
 ----------------------------
 -- Lindenbaum equivalence --

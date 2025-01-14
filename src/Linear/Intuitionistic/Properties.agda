@@ -14,7 +14,7 @@ Comp : ∀ {A C : ILL} (B : ILL) →
        [ B ] ⊢ C →
        -----
        [ A ] ⊢ C
-Comp {A} {C} B A⊢B B⊢C = Cut [ A ] • B A⊢B B⊢C
+Comp {A} {C} B A⊢B B⊢C = Cut B [ A ] • A⊢B B⊢C
 
 -----------------------
 -- Higher Identities --
@@ -42,7 +42,7 @@ Id0 : [ zer ] ⊢ zer
 Id0 = 0L
 
 Id! : ∀ {A : ILL} → [ A ] ⊢ A → [ ! A ] ⊢ ! A
-Id! {A} IdA = !R (!D IdA) Per1
+Id! {A} IdA = !R Per1 (!D IdA)
 
 -- THE Identity rule
 Id : ∀ {A : ILL} → [ A ] ⊢ A
@@ -56,9 +56,9 @@ Id {A ⊕ B} = Id⊕ Id Id
 Id {zer} = Id0
 Id { ! A } = Id! Id
 
------------------------------------
--- Properties of ILL conncetives --
------------------------------------
+---------------------------------------
+-- Properties of the ILL connectives --
+---------------------------------------
 
 MP : ∀ {A B : ILL} →
      -----------------
@@ -100,7 +100,7 @@ MP {A} {B} = ⊸L [ A ] • Id Id
        Δ ⊢ A ⊸ B →
        ---------
        Δ ⟪ A ⊢ B
-⊸R⁻¹ {Δ} {A} {B} ⊢A⊸B = Cut Δ [ A ] (A ⊸ B) ⊢A⊸B MP
+⊸R⁻¹ {Δ} {A} {B} ⊢A⊸B = Cut (A ⊸ B) Δ [ A ] ⊢A⊸B MP
 
 -- Alternative conjunction is a negative connective (R-invertible)
 
@@ -108,16 +108,24 @@ MP {A} {B} = ⊸L [ A ] • Id Id
         Δ ⊢ A & B →
         ---------
         Δ ⊢ A
-&R⁻¹₁ {Δ} {A} B ⊢A&B = Cut Δ • (A & B) ⊢A&B &π₁
+&R⁻¹₁ {Δ} {A} B ⊢A&B = Cut (A & B) Δ • ⊢A&B &π₁
 
 &R⁻¹₂ : ∀ {Δ : Resources} {A : ILL} (B : ILL) →
         Δ ⊢ A & B →
         ---------
         Δ ⊢ B
-&R⁻¹₂ {Δ} {A} B ⊢A&B = Cut Δ • (A & B) ⊢A&B &π₂
+&R⁻¹₂ {Δ} {A} B ⊢A&B = Cut (A & B) Δ • ⊢A&B &π₂
 
 -- Top is a negative connective (R-invertible)
 -- ... but its rule has no premises, so this is a trivial fact
+
+-- The promotion rule of the "of course" connective (!R) is invertible
+
+!R⁻¹ : ∀ {Δ : Resources} {A : ILL} →
+       Δ ⊢ ! A →
+       -------
+       Δ ⊢ A
+!R⁻¹ {Δ} {A} h = Cut (! A) Δ • h (!D Id)
 
 -----------------------------
 -- Lindenbaum equivalences --
@@ -139,27 +147,46 @@ MP {A} {B} = ⊸L [ A ] • Id Id
 &Comm : ∀ {A B : ILL} → A & B ⊣⊢ B & A
 &Comm = ⊢&Comm , ⊢&Comm
 
--- 'one' is the identity of '⊗'
+-- '⊕' is commutative
 
-⊢⊗1 : ∀ {A : ILL} → [ A ⊗ one ] ⊢ A
-⊢⊗1 = ⊗L (1L Id)
+⊢⊕Comm : ∀ {A B : ILL} → [ A ⊕ B ] ⊢ B ⊕ A
+⊢⊕Comm {A} {B} = ⊕L (⊕R₂ Id) (⊕R₁ Id)
 
-⊗1⊢ : ∀ {A : ILL} → [ A ] ⊢ A ⊗ one
-⊗1⊢ {A} = ⊗R [ A ] • Id 1R
+⊕Comm : ∀ {A B : ILL} → A ⊕ B ⊣⊢ B ⊕ A
+⊕Comm = ⊢⊕Comm , ⊢⊕Comm
+
+-- '1' is the identity of '⊗'
+
+⊗1⊢ : ∀ {A : ILL} → [ A ⊗ one ] ⊢ A
+⊗1⊢ = ⊗L (1L Id)
+
+⊢⊗1 : ∀ {A : ILL} → [ A ] ⊢ A ⊗ one
+⊢⊗1 {A} = ⊗R [ A ] • Id 1R
 
 ⊗1 : ∀ {A : ILL} → A ⊗ one ⊣⊢ A
-⊗1 = ⊢⊗1 , ⊗1⊢
+⊗1 = ⊗1⊢ , ⊢⊗1
 
 -- '⊤' is the identity of '&'
 
-⊢&⊤ : ∀ {A : ILL} → [ A & ⊤ ] ⊢ A
-⊢&⊤ = &L₁ Id
+&⊤⊢ : ∀ {A : ILL} → [ A & ⊤ ] ⊢ A
+&⊤⊢ = &L₁ Id
 
-&⊤⊢ : ∀ {A : ILL} → [ A ] ⊢ A & ⊤
-&⊤⊢ = &R Id ⊤R
+⊢&⊤ : ∀ {A : ILL} → [ A ] ⊢ A & ⊤
+⊢&⊤ = &R Id ⊤R
 
 &⊤ : ∀ {A : ILL} → A & ⊤ ⊣⊢ A
-&⊤ = ⊢&⊤ , &⊤⊢
+&⊤ = &⊤⊢ , ⊢&⊤
+
+-- '0' is the identity of ⊕'
+
+⊕0⊢ : ∀ {A : ILL} → [ A ⊕ zer ] ⊢ A
+⊕0⊢ = ⊕L Id 0L
+
+⊢⊕0 : ∀ {A : ILL} → [ A ] ⊢ A ⊕ zer
+⊢⊕0 = ⊕R₁ Id
+
+⊕0 : ∀ {A : ILL} → A ⊕ zer ⊣⊢ A
+⊕0 = ⊕0⊢ , ⊢⊕0
 
 -- Flip
 
@@ -181,7 +208,7 @@ Exchange++ • • h = h
 Exchange++ • (Δ₂ ⟪ x) h = ⊸R⁻¹ (Exchange++ • Δ₂ (⊸R h))
 Exchange++ (Δ₁ ⟪ x) • h = ⊸R⁻¹ (Exchange++ Δ₁ • (⊸R h))
 Exchange++ (Δ₁ ⟪ x) (Δ₂ ⟪ y) {A} h =
-  ⊸R⁻¹ (Exchange++ Δ₁ (Δ₂ ⟪ y) (⊸R⁻¹ (Exchange++ Δ₂ Δ₁ (Cut (Δ₂ ++ Δ₁) • (x ⊸ y ⊸ A) (⊸R (Exchange++ (Δ₁ ⟪ x) Δ₂ (⊸R h))) ⊢Flip))))
+  ⊸R⁻¹ (Exchange++ Δ₁ (Δ₂ ⟪ y) (⊸R⁻¹ (Exchange++ Δ₂ Δ₁ (Cut (x ⊸ y ⊸ A) (Δ₂ ++ Δ₁) • (⊸R (Exchange++ (Δ₁ ⟪ x) Δ₂ (⊸R h))) ⊢Flip))))
 
 -----------------------
 -- Inverse rules (L) --
@@ -193,7 +220,7 @@ Exchange++ (Δ₁ ⟪ x) (Δ₂ ⟪ y) {A} h =
        Δ ⟪ A ⊗ B ⊢ C →
        -------------
        Δ ⟪ A ⟪ B ⊢ C
-⊗L⁻¹ {Δ} {A} {B} {C} h = Exchange++ [ A ⟨ B ] Δ (Cut [ A ⟨ B ] Δ (A ⊗ B) ⊗Intro h)
+⊗L⁻¹ {Δ} {A} {B} {C} h = Exchange++ [ A ⟨ B ] Δ (Cut (A ⊗ B) [ A ⟨ B ] Δ ⊗Intro h)
 
 -- Alternative disjunction is a positive connective (L-invertible)
 
@@ -201,13 +228,32 @@ Exchange++ (Δ₁ ⟪ x) (Δ₂ ⟪ y) {A} h =
         Δ ⟪ A ⊕ B ⊢ C →
         -------------
         Δ ⟪ A ⊢ C
-⊕L⁻¹₁ {Δ} {A} {B} {C} h = Exchange++ [ A ] Δ (Cut [ A ] Δ (A ⊕ B) ⊕Inl h)
+⊕L⁻¹₁ {Δ} {A} {B} {C} h = Exchange++ [ A ] Δ (Cut (A ⊕ B) [ A ] Δ ⊕Inl h)
 
 ⊕L⁻¹₂ : ∀ {Δ : Resources} {A B C : ILL} →
         Δ ⟪ A ⊕ B ⊢ C →
         -------------
         Δ ⟪ B ⊢ C
-⊕L⁻¹₂ {Δ} {A} {B} {C} h = Exchange++ [ B ] Δ (Cut [ B ] Δ (A ⊕ B) ⊕Inr h)
+⊕L⁻¹₂ {Δ} {A} {B} {C} h = Exchange++ [ B ] Δ (Cut (A ⊕ B) [ B ] Δ ⊕Inr h)
+
+-- One is a positive connective (L-invertible)
+
+1L⁻¹ : ∀ {Δ : Resources} {A : ILL} →
+     Δ ⟪ one ⊢ A →
+     -----------
+     Δ ⊢ A
+1L⁻¹ {Δ} {A} h = Exchange++ • Δ (Cut one • Δ 1R h)
+
+-- Zero is a positive connective (L-invertible)
+-- ... but its rule has no premises, so this is a trivial fact
+
+-- "Of course" (!) is a positive connective (L-invertible)
+
+!C⁻¹ : ∀ {Δ : Resources} {A B : ILL} →
+       Δ ⟪ ! A ⊢ B →
+       -----------
+       Δ ⟪ ! A ⟪ ! A ⊢ B
+!C⁻¹ = !W
 
 -----------------------
 -- Elimination rules --
@@ -218,5 +264,29 @@ Exchange++ (Δ₁ ⟪ x) (Δ₂ ⟪ y) {A} h =
      Δ₂ ⊢ A ⊸ B →
      ------------
      Δ₁ ++ Δ₂ ⊢ B
-⊸E {Δ₁} {Δ₂} {B} A ⊢A ⊢A⊸B = Cut Δ₁ Δ₂ A ⊢A (⊸R⁻¹ ⊢A⊸B)
+⊸E {Δ₁} {Δ₂} {B} A ⊢A ⊢A⊸B = Cut A Δ₁ Δ₂ ⊢A (⊸R⁻¹ ⊢A⊸B)
 
+-----------------------------------------------
+-- Properties of the ILL connectives (cont.) --
+-----------------------------------------------
+
+Unapply : ∀ {Δ : Resources} {A B C : ILL} →
+          Δ ⟪ B ⊢ C →
+          -----------------
+          Δ ⟪ A ⟪ A ⊸ B ⊢ C
+Unapply {Δ} {A} {B} {C} h = ⊸R⁻¹ (Exchange++ [ A ] Δ (⊸R (⊸L [ A ] Δ Id h)))
+
+-------------------------------------
+-- Lindenbaum equivalences (cont.) --
+-------------------------------------
+
+-- Currying
+
+⊢Curry : ∀ {A B C : ILL} → [ A ⊗ B ⊸ C ] ⊢ A ⊸ B ⊸ C
+⊢Curry = ⊸R (⊸R (⊗L⁻¹ (ExchangeTopTwo MP)))
+
+⊢Uncurry : ∀ {A B C : ILL} → [ A ⊸ B ⊸ C ] ⊢ A ⊗ B ⊸ C
+⊢Uncurry = ⊸R (⊗L (Exchange02 (Unapply (Unapply Id))))
+
+Currying : ∀ {A B C : ILL} → A ⊗ B ⊸ C ⊣⊢ A ⊸ B ⊸ C
+Currying = ⊢Curry , ⊢Uncurry
